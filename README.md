@@ -20,3 +20,7 @@
 
 # 서비스 주소
     https://www.gini.fun/
+
+# 개발 후기
+    https://it-timehacker.tistory.com/52
+    
