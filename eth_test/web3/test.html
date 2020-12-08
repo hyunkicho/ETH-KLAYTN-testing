@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Document</title>
+
+    <link rel="stylesheet" type="text/css" href="main.css">
+
+    <script type="text/javascript" src="./public/javascripts/web3.js"></script>
+    <script type="text/javascript" src="./public/javascripts/giniLottoABI.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+    <div class="container">
+
+        
+        <h1>로그인</h1>
+        <label for="privatekey" class="col-lg-2 control-label">private key</label>
+        <input id="privatekey" type="text">
+        <button onClick="login()"><b>로그인</b></button>
+        <div><span id="address"></span>접속정보</div>
+        <div><span id="privateKey"></span>privateKey</div>
+        <div><span id="nonce"></span>nonce</div>
+
+
+
+        <h1>Buy Lotto</h1>
+
+        <h2 id="instructor"></h2>
+
+        <label for="buyer" class="col-lg-2 control-label">buyer</label>
+        <input id="buyer" type="text">
+
+        <label for="donationId" class="col-lg-2 control-label">donationID</label>
+        <input id="donationId" type="text">
+
+        <label for="lotNumber" class="col-lg-2 control-label">lotNumber</label>
+        <input id="lotNumber" type="text">
+       
+        <button onClick="buyLottery()" class ="button"><b>구매 하기</b></button>
+        <button onClick="buy10000tickets()" class ="button"><b>만개 구매 하기</b></button>
+
+        
+        <h1>Lotto information</h1>
+        <button onClick="checking()" class ="button"><b>Update Lotto info</b></button>
+
+        <div><span  id="gameId"></span>gameId</div>
+        <div><span  id="gameIndex_ticketNumber"> </span>ticketNumber</div>
+     
+    </div>
+
+    
+    <script>
+        if (typeof web3 !== 'undefined') {
+          web3 = new Web3(web3.currentProvider);
+          console.log("c");
+      } else {
+          // set the provider you want from Web3.providers
+          console.log("a");
+          web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io/v3/a5d883b8e91348bba8f7e625b35ebdc5"));
+          console.log("b");
+      }
+      </script>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+
+    <script>
+
+    web3.eth.defaultAccount = web3.eth.accounts[0];
+
+    contractAddress = '0xa0410a23e07a93b288dbfc760e5b5e1f6b39f498';
+    let contract = new web3.eth.Contract(giniLottoABI, contractAddress);
+    let methods = contract.methods;
+
+
+
+    var buyer = document.getElementById("buyer").value;
+    var donationId = document.getElementById("donationId").value;
+    var lotNumber = document.getElementById("lotNumber").value;
+    var privatekey = document.getElementById("privatekey").value;
+    var keystore = JSON.parse('{"version":3,"id":"2fd3d37a-a9d1-4178-a37c-ad3b1b2e5a46","address":"aa2dca83ba1861ad935a5d62b075f9ad28d5c67b","crypto":{"ciphertext":"12083deda50ca11f652765d4b849f859163d3cc4cc0d70f400507d04f445bb98","cipherparams":{"iv":"cbcda40166a1a82b4dd9383aba42bb3e"},"cipher":"aes-128-ctr","kdf":"scrypt","kdfparams":{"dklen":32,"salt":"0fedcafed04570edf840dac2ae644999aa1842728e3a6aa312d1d32eb8460206","n":8192,"r":8,"p":1},"mac":"619b64a77d2986c2557daa441cb7386f1762dd647ece6b89c6bb80ad8daf2c52"}}');
+    var password = "wedata1016";
+    let nonce = 0;
+    let confirmationCount = 0;
+    console.log(password);
+    console.log(keystore);
+
+    //admin keystore 접근 및 decrypt
+    var privatekey;
+    try {
+        // privatekey = web3.eth.accounts.wallet.decrypt([keystore], password);
+    }
+    catch (exception) {
+    }
+
+    //사용주소설정
+    // web3.eth.defaultAccount = "0xaa2dca83ba1861ad935a5d62b075f9ad28d5c67b";
+
+
+    function login(){
+    //let password = document.getElementById('pass').value;
+    console.log(password);
+    console.log(keystore);
+    // a= Promise.resolve(web3.eth.accounts.decrypt(keystore,password));
+    a= Promise.resolve(web3.eth.accounts.wallet.decrypt([keystore], password));
+    a.then(function (result){
+        alert("로그인 되었습니다!");
+        document.getElementById("address").innerText = result[0].address;
+        web3.eth.defaultAccount = result[0].address;
+        document.getElementById("privateKey").innerText = result[0].privateKey;
+        let address = result[0].address;
+        let balval = 000;
+        let balance = web3.eth.getBalance(result[0].address).then(balval => {
+            console.log("이더리움 잔액 : " + balval/10**18 + "ETH");
+        });
+        getNonce(address);
+        // methods.balanceOf(result[0].address).call().then(l => {
+        //     document.getElementById('myBalance').innerText = l
+        // });
+    // web3.eth.personal.unlockAccount(address, password, 6**100000).then(console.log('Account unlocked!'));
+    });
+}
+    
+    //contract 함수
+    var _buyer = "0xaa2dca83ba1861ad935a5d62b075f9ad28d5c67b";
+    var _donationid = 1;
+    var _lotNumber = [18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20] ;
+    var enabi = contract.methods.buyLottery(_buyer,_donationid,_lotNumber).encodeABI();
+    console.log(enabi);
+  
+    function getNonce(address) {
+        console.log(address);
+    web3.eth.getTransactionCount(address)
+    .then(l => {console.log(l); nonce = l;})
+    }
+
+    //전송
+    function buyLottery(vnonce) {
+    web3.eth.sendTransaction({from:web3.eth.defaultAccount ,to:contractAddress, value:0, gas:5300000, gasPrice:100000000, data:enabi, nonce:vnonce})
+    .on('transactionHash', function(hash){
+      console.log(hash);
+      //res.send({status: 'success', msg: ''});
+    })
+    .on('receipt', function(receipt){console.log(receipt)})
+    .on('confirmation', function(confirmationNumber, receipt){
+      console.log(confirmationNumber);
+      confirmationCount++;
+      if(confirmationNumber == 3){
+       console.log("confirmed")
+      }
+    })
+    .on('error', function(err){
+        console.log("error");
+      })
+}
+      
+/*
+    function buyLottery() {
+        var enabi = contract.methods.buyLottery("0xaa2dca83ba1861ad935a5d62b075f9ad28d5c67b",1,[18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20] ).encodeABI();
+        console.log("진행");
+        contract.methods.buyLottery("0xaa2dca83ba1861ad935a5d62b075f9ad28d5c67b",1,[18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20,18,2,1,5,20] ).call().then(l => {
+            
+            if(l > 0) {
+                Trx = contract.methods.buyLottery().send({
+                    from: 0xaa2dca83ba1861ad935a5d62b075f9ad28d5c67b,
+                    gasPrice: 18000000000,
+                    gas: 1000000
+                });
+                Trx.then(l => {
+                    web3.eth.accounts.signTransaction(l, privateKey);;
+                    console.log("구매가 완료되었습니다.");
+                });
+                
+            }
+            else {
+                console.log("오류.");
+            }
+        });
+    }
+*/
+   /* function buy10000tickets() {
+        for(var i=0;i<50;i++){
+            console.log("티켓"+ i*20 +"개째 구매.");
+            buyLottery(nonce + i);
+        }
+    } */
+
+    async function buy10000tickets() {
+        for(var i=0;i<500;i++){
+            console.log("Active")
+/*         setInterval(() => {
+            function buyLottery(nonce + i)
+        }, 20000); */
+            buyLottery(nonce + i);
+            await sleep(10000);
+    }
+    }
+    function checking() {
+
+    methods.gameId().call().then(l => {
+        document.getElementById('gameId').innerText =  l;
+    });
+
+
+    methods.gameIndex(document.getElementById('gameId').innerText).call().then(l => {
+       console.log(l)
+       document.getElementById('gameIndex_ticketNumber').innerText =  l[5] ;
+    });
+}
+
+const sleep = (ms) => {
+   return new Promise(resolve=>{
+      setTimeout(resolve,ms)
+   })
+};
+    </script>
+
+
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Document</title>
+
+    <link rel="stylesheet" type="text/css" href="main.css">
+
+    <script type="text/javascript" src="./public/javascripts/web3.js"></script>
+    <script type="text/javascript" src="./public/javascripts/giniLottoABI.js"></script>
+    <script type="text/javascript" src="./public/javascripts/giniTokenABI.js"></script>
+    <script type="text/javascript" src="./public/javascripts/GT_ganache.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+    <div class="container">
+
+        
+        <h1>로그인</h1>
+        <button onClick="login()"><b>로그인</b></button>
+        <div><span id="address"></span>접속정보</div>
+        <div><span id="privateKey"></span>privateKey</div>
+
+        <h1>Buy Lotto</h1>
+
+        <label for="buyer" class="col-lg-2 control-label">buyer</label>
+        <input id="buyer" type="text">
+
+        <label for="donationId" class="col-lg-2 control-label">donationID</label>
+        <input id="donationId" type="text">
+
+        <label for="lotNumber" class="col-lg-2 control-label">lotNumber</label>
+        <input id="lotNumber" type="text">
+       
+        <button onClick="Rank1()" class ="button"><b>1개 구매 하기(1등)</b></button>
+        <button onClick="Rank2()" class ="button"><b>1개 구매 하기(2등)</b></button>
+        <button onClick="Rank3()" class ="button"><b>1개 구매 하기(3등)</b></button>
+        <button onClick="buyAutoLottery150()" class ="button"><b>150개 구매 하기(랜덤)</b></button>
+        <button onClick="buyAutoLottery()" class ="button"><b>1000개 구매 하기</b></button>
+        <button onClick="buy50Lottery()" class ="button"><b>오토십 N개 구매 하기</b></button>
+        <button onClick="create_100accounts()" class ="button"><b>디버깅</b></button>
+
+        <button onClick="testWeb3Batch()" class= "button">배치테스트</button>
+
+        <h1>Lotto information</h1>
+        <button onClick="checking_lotto()" class ="button"><b>Update Lotto info</b></button>
+        <div><span  id="gameId"></span>gameId</div>
+        <div><span  id="gameIndex_ticketNumber"> </span>ticketNumber</div>
+        <div><span  id="gameLotNumberMax"> </span>gameLotNumberMax</div>
+
+        <h1>Admin 권한 로또 실행</h1>
+        <button onClick="TestregisterReferal()" class= "button">TestregisterReferal(레퍼럴등록 테스트 ver)</button>
+        <button onClick="adminGenerateRandom()" class="button">1.랜덤값 생성</button>
+        <button onClick="adminDrawNumber()" class= "button">2.랜덤 번호 생성</button>
+        <button onClick="adminCalWinner()" class= "button">3.티켓 당첨자 계산</button>
+        <button onClick="adminDistribute()" class= "button">4.당첨금 분배</button>
+        <button onClick="adminEndGame()" class= "button">5.EndGame(2~4한번에)</button>
+        <label for="rewards" class="col-lg-2 control-label">rewards</label>
+        <input id="rewards" type="text">
+        <button onClick="withdrawRewards()" class= "button">6.기부 %선택 후 보상 수령 </button>
+        <button onClick="adminBeginAGame()" class="button">7.게임시작</button>
+
+        <h1>투표 관련</h1>
+        <button onClick="adminSetFundAddress()" class= "button">adminSetFundAddress(계정정보 등록)</button>
+        <button onClick="adminReginsterDonation()" class= "button">adminReginsterDonation(후보등록)</button>
+        <button onClick="fund4Donation()" class= "button">Donation 금액 보내기 (무상)</button>
+        <button onClick="fund4Lottery()" class= "button">로또 금액 보내기 (무상)</button>
+
+
+
+
+       
+
+        <h1>GINI_TOKEN</h1>
+        <button onClick="approve()" class="button">로또에 투표 보내기</button>
+        <button onClick="transfer()" class= "button">토큰 전송</button>
+
+        <h1>Token information</h1>
+        <button onClick="checking_Token()" class ="button"><b>Update Lotto info</b></button>
+        <label for="EOAaddress" class="col-lg-2 control-label">계정 주소 입력</label>
+        <input id="EOAaddress" type="text">
+
+        <div><span  id="balanceOf()"></span>balanceOf</div>
+        <div><span  id="gameIndex_ticketNumber"> </span>ticketNumber</div>
+        <div><span  id="gameLotNumberMax"> </span>gameLotNumberMax</div>
+    </div>
+
+    
+    
+
+</script>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+
+</body>
+</html>
