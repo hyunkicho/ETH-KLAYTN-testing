@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>GiniLotto</title>
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/style.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <!-- <script type="text/javascript" src="javascripts/web3.js"></script> -->
+    <!-- <script type="text/javascript" src="javascripts/giniLottoABI.js"></script> -->
+    <script type="text/javascript" src="./javascripts/giniTokenABI.js"></script>
+    <!-- <script type="text/javascript" src="javascripts/klaytntestpk.js"></script> -->
+    <script type="text/javascript" src="javascripts/klaytntestpk.js"></script>
+
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <!-- <script type="text/javascript" src="javascripts/Ginitest.js"></script> -->
+    <style>
+    .pkoption{ cursor: pointer; }
+    .ui-menu { width: 150px; }
+    .pkgroup { width: 600px; }
+    .privatekey { width: 600px;}
+    </style>
+</head>
+<script>
+    $(document).ready(function(){
+        $("#testGini").on("click", function(){
+           
+            console.log(klaytntestpk);
+            for(let i=0; i<10; i++){
+                $("#menu").append('<li><div>Group '+(i+1)+'</div> <ul class="pkgroup"></ul> </li>');
+                for(let j=0; j<10; j++){
+                    $("#menu li .pkgroup").eq(i).append('<li><div class="pkoption" indexval="'+(i*10+j)+'">'+klaytntestpk[i*10+j].pubk+'</div></li>');
+                }
+            }
+            $( "#menu" ).menu({
+                // menus: ".pkgroup",
+                select: function(event, ui){
+                    if(ui.item[0].childElementCount == 1){
+                        $(".privatekey").val(ui.item[0].childNodes[0].innerText);
+                        // pk = klaytntestpk[ui.item[0].firstChild.attributes.indexval.value].prik;
+                        $("#address").text(ui.item[0].textContent);
+                        $("#privateKey").text(klaytntestpk[ui.item[0].firstChild.attributes.indexval.value].prik);
+                        console.log("testing1")
+                        $.ajax({
+                            type: "POST",
+                            url: "/loginInfo",
+                            data: {
+                                'testEOA' : $("#address").text(),
+                                // 'giniTokenABI' : JSON.stringify(giniTokenABI),
+                            },
+                            success: function(result){
+                                $("#klaytnBalance").text(result.data.klaytnBalance);
+                                $("#myBalance").text(result.data.myBalance);
+                                $("#rannum").text(result.data.generateRandom);
+                                $("#ca_address1").text(result.data.ca_address1);
+                                $("#ca_address2").text(result.data.ca_address2);
+                                $("#ca_address3").text(result.data.ca_address3);
+                                $("#Owner").text(result.data.ownerEOA);
+
+                                console.log('클레이튼 잔액 : '+result.data.klaytnBalance);
+                                console.log('GINI 잔액 : '+result.data.myBalance);
+                                console.log('랜덤번호 :' +result.data.generateRandom);
+                                console.log('owner주소 :'+result.data.ownerEOA);
+
+                                alert(result.msg);
+                            },
+                            error: function(err){
+                                console.log(err);
+                            }
+                        });
+                    }
+                }
+            });
+            $("#testGini").prop("disabled", true);
+                // }
+            // });
+        });
+        
+        $("#createWallet").on("click",function() {
+            $.ajax({
+                    type: "POST",
+                    url: "/createWallet",
+                    success: function(data){
+                    console.log(data)
+                    $("#wallet").text(data);
+
+                    }  
+            })
+           
+        });
+
+
+////////////////////////////////////////////////////////토큰 관련 함수/////////////////
+        $("#transfer").on("click", function(){
+            // if($("#value").val() == '' || $("#value").val() == 0){
+            //     alert("보내는 개수를 입력해주세요.");
+            // }
+            // let NumtoBuy = document.getElementById("NumtoBuy").value;
+            // var _buyer = document.getElementById("Buyer").value;
+            // var _donationid = 1;
+            $.ajax({
+                type: "POST",
+                url: '/sendGINI',
+                data: {
+                    'testpk': $("#privateKey").text(),
+                    'testEOA' : $("#address").text(),
+                    // 'giniLottoABI' : JSON.stringify(giniLottoABI),
+                    'to' : $("#to").val(),
+                    'value' :  $("#value").val(),
+                },
+                success: function(r){
+                    alert(r.status +' '+ r.msg);
+                }
+            });
+        });
+
+        $("#approve").on("click", function(){
+            $.ajax({
+                type: "POST",
+                url: '/approve',
+                data: {
+                    'testpk': $("#privateKey").text(),
+                    'testEOA' : $("#address").text(), //sign에 필요한 요소들
+                    'ownerEOA': $("#Owner").text(),
+                    'spender' : $("#spender").val()
+                },
+                success: function(r){
+                    $("#approved").text(r.data.approvebal);
+                    alert(r.status +' '+ r.msg);
+                }
+            });
+        });
+        
+        
+        $("#checkBalanceOf").on("click", function(){
+        $.ajax({
+            type: "POST",
+            url: '/balanceOf',
+            data: {
+                'checking_address' : $("#checking_address").val()
+            },
+            success: function(r){
+                $("#balanceOf").text(r.data.myBalance);
+                alert("조회성공");
+            }
+        });
+        });
+//////////////////////////////////////////////////로또 관련 함수///////////////////////////
+
+    $("#adminSetDonation").on("click", function(){
+        $.ajax({
+            type: "POST",
+            url: '/adminSetDonation',
+            data: {
+                'testpk': $("#privateKey").text(),
+                'testEOA' : $("#address").text(),
+                'donationAddress' : $("#donationAddress").val(),
+                'votingDuraion' :  $("#votingDuraion").val(),
+            },
+            success: function(r){
+                console.log("adminSetDonation complete")
+            }
+        });
+    });
+        
+    $("#adminBeginAGame").on("click", function(){
+        $.ajax({
+            type: "POST",
+            url: '/adminBeginAGame',
+            data: {
+                'testpk': $("#privateKey").text(),
+                'testEOA' : $("#address").text(),
+                'gameLotNumberMax' : $("#gameLotNumberMax").val()
+            },
+            success: function(r){
+                alert(r.status +' '+ r.msg);
+            }
+        });
+    });
+
+    $("#buyLotto").on("click", function(){
+    if($("#NumtoBuy").val() == '' || $("#NumtoBuy").val() == 0){
+        alert("구매개수를 입력해주세요.");
+    }
+    // let NumtoBuy = document.getElementById("NumtoBuy").value;
+    // var _buyer = document.getElementById("Buyer").value;
+    // var _donationid = 1;
+    $.ajax({
+        type: "POST",
+        url: '/buylotto',
+        data: {
+            'testpk': $("#privateKey").text(),
+            'testEOA' : $("#address").text(),
+            'giniLottoABI' : JSON.stringify(giniLottoABI),
+            'numtoBuy' : $("#NumtoBuy").val(),
+            'buyer' : document.getElementById("buyer").value,
+            'donationid' : 1
+        },
+        success: function(r){
+            alert(r.status +' '+ r.msg);
+        }
+    });
+        });
+
+
+    $("#checkingLotto").on("click", function(){ //조회할때 쓰는 함수
+        $.ajax({
+            type: "POST",
+            url: '/DonationInfo',
+            data: {
+            },
+            success: function(r){
+                $("#isDonationSet").text(r.data.isDonationSet);
+                $("#gameId").text(r.data.gameId);
+                $("#gameDutation").text(r.data.gameDutation);
+                $("#getDrawedLotNumber").text(r.data.getDrawedLotNumber);
+                $("#getGameLotNumberindex").text(r.data.approvebal);
+                $("#gameIndex").text(r.data.gameIndex);
+                alert(r.status +' '+ r.msg);
+            }
+        });
+    });
+        
+
+    $("#buylotto").on("click", function(){
+        $.ajax({
+            type: "POST",
+            url: '/buylotto',
+            data: {
+                'testpk': $("#privateKey").text(),
+                'testEOA' : $("#address").text(),
+                'repeatNum' : $("#repeatNum").value()
+
+            },
+            success: function(r){
+            }
+        });
+    });
+
+
+    $("#testing").on("click", function(){
+        $.ajax({
+            type: "POST",
+            url: '/testing',
+            
+            success: function(r){
+                console.log(r);
+            }
+        });
+    });
+
+    $("#testing2").on("click", function(){
+        $.ajax({
+            type: "POST",
+            url: '/testing2',
+          
+            success: function(r){
+                console.log(r);
+            }
+        });
+    });
+
+    $("#testing3").on("click",function(){
+        $.ajax({
+            type: "POST",
+            url : '/testing3',
+
+            success:function(r){
+                console.log(r);
+            }
+        })
+    })
+   
+
+    $("#testing4").on("click", function(){
+        $.ajax({
+            type: "POST",
+            url: '/testing4',
+          
+            success: function(r){
+                console.log(r);
+            }
+        });
+    });
+
+    $("#doItAgain").on("click", function(){
+        $.ajax({
+            type: "POST",
+            url: '/doItAgain',
+          
+            success: function(r){
+                console.log(r);
+            }
+        });
+    });
+   
+
+
+    $("#showresult").on("click", function(){
+        $.ajax({
+            type: "POST",
+            url: '/showresult',
+          
+            success: function(r){
+            }
+        });
+    });
+    
+    $("#BuyerAddressButton").on("click", function(){
+        $.ajax({
+            type: "POST",
+            url: '/BuyerAddress',
+            data: {
+            '_lotNumber' :  $("#lotNumber").val()
+            },
+            success: function(r){
+                $("#BuyerAddress").text(r);
+                alert("조회 성공");
+            }
+        });
+    });
+
+    $("#playerTree").on("click", function(){
+        $.ajax({
+            type: "POST",
+            url: '/playerTree',
+            data: {
+            '_lotNumber' :  $("#lotNumber").val()
+            },
+            success: function(r){
+                alert("조회 성공");
+            }
+        });
+    });
+
+    $("#getEvent").on("click", function(){
+        $.ajax({
+            type: "POST",
+            url: '/getEvent',
+            data: {
+            '_lotNumber' :  $("#lotNumber").val()
+            },
+            success: function(r){
+                alert("조회 성공");
+            }
+        });
+    });
+
+    $("#testing5").on("click", function(){
+        $.ajax({
+            type: "POST",
+            url: '/testing5',
+            data: {
+            '_lotNumber' :  $("#lotNumber").val()
+            },
+            success: function(r){
+                alert("조회 성공");
+            }
+        });
+    });
+
+    $("#RegisterReferal").on("click", function(){
+        $.ajax({
+            type: "POST",
+            url: '/RegisterReferal',
+            success: function(r){
+                alert("조회 성공");
+            }
+        });
+    });
+
+});
+
+
+
+        // function generateRandomTicket(TicketCount) {
+
+        // let _ticket = new Array();
+
+        // //Ticket[i]=generateRandom(1, gameLotNumberMax);
+        // };
+
+    </script>
+<body>
+    <div class="container">
+        <div class="container">
+        <h1>로그인</h1>
+        <div>
+            <button id="testGini">TestGini</button>
+            <!-- <div> -->
+                <ul id="menu">
+                </ul>
+            <!-- </div> -->
+        </div>
+        <label for="privatekey" class="col-lg-2 control-label">public key</label>
+        <input class="privatekey" type="text">
+        <span id="wallet"> </span>
+        <!-- <button id="pklogin"><b>로그인</b></button> -->
+        <div>접속정보 <span id="address"></span></div>
+        <div>privateKey <span id="privateKey"></span></div>
+        
+        <div>KLAY 보유중 <span id="klaytnBalance"></span></div>
+        <div>GINI 보유중 <span id="myBalance"></span></div>
+        <div>로또 owner 주소 <span id="Owner"></span></div>
+        <div>로또 CA 주소 <span id="ca_address1"></span></div>
+        <div>지니 CA 주소 <span id="ca_address2"></span></div>
+        <div>기부 CA 주소 <span id="ca_address3"></span></div>
+        <div>생성된 랜덤값 <span id="rannum"></span></div>
+        
+        
+        <h1>테스트</h1>
+        <button id="testing">로또 기본 세팅</button>
+        <button id="testing2">로또 구매 - 1명이 여러개 구매</button>
+        <button id="testing3">로또 구매 - N명이 여러개 구매(레퍼럴 테스트)</button>
+        <button id="testing4">로또 종료 </button>
+        <button id="testing5">당첨금 분배</button>
+        <button id="doItAgain">로또 재시작(기본세팅 생략)</button>
+        <button id="getEvent">이벤트 조회</button>
+
+
+        <button id="RegisterReferal">레퍼럴 등록</button>
+        
+        
+        <div>테스트 결과<span id="testing"></span></div>
+        <button id="showresult">결과 로그 남기기</button>
+        <h1>티켓번호 입력시 누가 구매했는지 확인 가능</h1>
+        <input id= "lotNumber" type="text">
+        <button id= "BuyerAddressButton">조회</button>
+        <div>구매자: <span id="BuyerAddress"></span></div>
+        <button id="playerTree"> 레퍼럴 분배금 계산 로그 남기기</button>
+        
+        <h1>GINI 잔고 확인 - 결과금 배분 확인</h1>
+        <div>GINI잔고 <span id="balanceOf"></span> </div>
+        <button id="checkBalanceOf">잔고 확인</button>
+        <button id="getEvent">구매 이벤트 로그 확인</button>
+
+        
+        <label for="checking_address" class="col-lg-2 control-label">checking_address : </label>
+        <input type="text" id="checking_address">
+        
+        
+        <button id='createWallet'>지갑생성</button>
+        
+        
+        <h1>밑에서 부터는 추후 세부 시나리오 조정용으로 사용</h1>
+        
+        <h1>1.기본 세팅- appove</h1>
+        <button id="approve">로또 컨트렉트에 지니 사용권한 부여</button>
+         <label for="spender" class="col-lg-2 control-label">approve할 CA주소 : </label>
+        <input type="text" id="spender" />
+        <div>부여된 사용권한 <span id="approved"></span></div>
+
+        <h1>1.기본 세팅-adimnSetDonation </h1>
+        <button id="adminSetDonation">로또를 기부 스마트 컨트렉트와 연동</button>
+        <label for="spender" class="col-lg-2 control-label">기부처 CA주소 : </label>
+       <input type="text" id="donationAddress" />
+       <label for="to" class="col-lg-2 control-label">기부 주기(몇 회차 마다인지) : </label>
+        <input type="text" id="votingDuraion" />
+       <div>기부여부 <span id="IsDonationSet"></span></div>
+
+
+        <h1>SEND GINI</h1>
+        <button id="transfer">지니 송금</button>
+        <label for="to" class="col-lg-2 control-label">받는주소: </label>
+        <input type="text" id="to" />
+        
+        <label for="value" class="col-lg-2 control-label">value : </label>
+        <input type="text" id="value">
+        
+
+        <h1>2.로또 시작</h1>
+        <button id="adminBeginAGame" class="button">게임시작</button>
+        <label for="gameLotNumberMax" class="col-lg-2 control-label">로또 번호 (25,30,35,40,45중 1개)</label>
+        <input id="gameLotNumberMax" type="text">
+        
+        <h1>3.Buy Lotto</h1>
+        <h2 id="instructor"></h2>
+        <!-- <label for="NumtoBuy" class="col-lg-2 control-label">구매개수:</label>
+        <input type="text" id="NumtoBuy" />
+        
+        <label for="buyer" class="col-lg-2 control-label">buyer</label>
+        <input id="buyer" type="text">
+        
+        <label for="donationId" class="col-lg-2 control-label">donationID</label>
+        <input id="donationId" type="text">
+        
+        <label for="lotNumber" class="col-lg-2 control-label">lotNumber</label>
+        <input id="lotNumber" type="text"> -->
+        <button id="buyLotto">구매하기</button>
+        <label for="lotNumber" class="col-lg-2 control-label">N번 반복</label>
+        <input id="lotNumber" type="text">
+        <button onClick="buylotto()" class ="button"><b>150개 구매 하기</b></button>
+
+        <!-- <button onClick="buy1000tickets()" class ="button"><b>1000개 구매 하기</b></button>
+        <button onClick="buyAutoLottery1000tickets()" class ="button"><b>오토십 1000개 구매 하기</b></button>
+        <button onClick="debug()" class ="button"><b>디버깅</b></button> -->
+        
+        <h1>4. 로또 번호 추출분배</h1>
+        <button onClick="adminDrawNumber()" class= "button">2.랜덤 번호 생성</button>
+        <button onClick="adminCalWithTicket()" class= "button">3.티켓 당첨자 계산</button>
+        <button onClick="adminDistribute()" class= "button">4.당첨금 분배</button>
+        <button onClick="adminEndGame()" class= "button">5.EndGame(2~4한번에)</button>
+        <button onClick="TestregisterReferal()" class= "button">TestregisterReferal(레퍼럴등록 테스트)</button>
+        
+        
+        <h1>4. Lotto information</h1>
+        <button onClick="checkingLotto()" id="checkingLotto" class ="button"><b>Update Lotto info</b></button>
+        <div><span  id="isDonationSet"></span>isDonationSet</div>
+        <div><span  id="gameId"></span>gameId</div>
+        <div><span  id="gameDutation"></span>gameDutation</div>
+        <div><span  id="getDrawedLotNumber"></span>getDrawedLotNumber</div>
+        <div><span  id="getGameLotNumberindex"></span>getGameLotNumberindex</div>
+        <div><span  id="gameIndex"></span>gameIndex</div>
+       
+
+        <div><span  id="gameIndex_ticketNumber"> </span>ticketNumber</div>
+
+        <h1>5. Ranking Information</h1>
+        <div><span  id="getRankInfo()"> </span>getRankInfo</div>
+        <div><span  id="gameId"></span>gameId</div>
+        <div><span  id="gameId"></span>gameId</div>
+        <div><span  id="gameId"></span>gameId</div>
+
+
+        <h1>지니토큰 관련</h1>
+    
+    </div>
+
+</body>
+</html>
